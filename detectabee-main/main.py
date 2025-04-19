@@ -1,4 +1,4 @@
-#  Copyright (c) 2025 João Toppa <j213140@dac.unicamp.br>
+#  Copyright (c) 2025 JoÃ£o Toppa <j213140@dac.unicamp.br>
 #  
 #   Redistribution and use in source and binary forms, with or without
 #   modification, are permitted provided that the following conditions
@@ -30,6 +30,9 @@ from screen import *
 import tables
 import camera
 import memorystick
+import digitalio
+import microcontroller
+
 
 #IMPORTS FOR BEE DETECTION
 import cv2
@@ -49,32 +52,32 @@ def button_memory_stick(channel):
 
 def init_display_and_bus(bus_num):
     if bus_num == 0:
-        scl = board.GPIO1
-        sda = board.GPIO0
+    
+        i2c = busio.I2C(board.SCL, board.SDA) 
+        bus = smbus.SMBus(0)
     elif bus_num == 1:
-        scl = board.SCL
-        sda = board.SDA
+        i2c = busio.I2C(board.SCL, board.SDA)
+        bus = smbus.SMBus(1)
     else:
         raise ValueError("Barramento I2C invalido")
 
-    i2c = busio.I2C(scl, sda)
-    bus = smbus.SMBus(bus_num)
     display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c)
     return i2c, bus, display
 
-i2c0, bus0, display0 = init_display_and_bus(0)
-i2c1, bus1, display1 = init_display_and_bus(1)
+GPIO.setmode(GPIO.BCM)
 
 #SETUP - GPIO
-GPIO.setmode(GPIO.BCM)
+
 GPIO.setup(5, GPIO.OUT)
 GPIO.setup(17, GPIO.OUT)
-GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+#GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+#GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.output(5, GPIO.HIGH)
 GPIO.output(17, GPIO.HIGH)
-GPIO.add_event_detect(23, GPIO.RISING, callback=button_page, bouncetime=200)
-GPIO.add_event_detect(24, GPIO.RISING, callback=button_memory_stick, bouncetime=200)
+#GPIO.add_event_detect(23, GPIO.RISING, callback=button_page, bouncetime=200)
+#GPIO.add_event_detect(24, GPIO.RISING, callback=button_memory_stick, bouncetime=200)
+i2c0, bus0, display0 = init_display_and_bus(0)
+i2c1, bus1, display1 = init_display_and_bus(1)
 
 #SETUP - Sensores
 
@@ -82,8 +85,8 @@ ccs811_0 = adafruit_ccs811.CCS811(i2c0)
 am2320_0 = adafruit_am2320.AM2320(i2c0)
 probe_0 = sensors.SensorProbe(ccs811_0, "", am2320_0)
 
-am2320_1 = adafruit_am2320.AM2320(i2c0)
-mpu9250_1 = sensors.Accelerometer(configs.DEVICE_ADDRESS, configs.ACCEL_XOUT_H, configs.ACCEL_CONFIG, bus0, configs.PWR_MGMT_1)
+am2320_1 = adafruit_am2320.AM2320(i2c1)
+mpu9250_1 = sensors.Accelerometer(configs.DEVICE_ADDRESS, configs.ACCEL_XOUT_H, configs.ACCEL_CONFIG, bus1, configs.PWR_MGMT_1)
 ccs811_1 = adafruit_ccs811.CCS811(i2c1)
 probe_1 = sensors.SensorProbe(ccs811_1, mpu9250_1, am2320_1)
 
