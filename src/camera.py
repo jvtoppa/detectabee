@@ -57,21 +57,25 @@ class Camera:
         return frame
 
     def capture(self):
-        fram = self.camera.capture_array()
-        curr = time.time()
-        print("[DEBUG] Frame capturado, shape:", fram.shape)
+            fram = self.camera.capture_array()
+            curr = time.time()
+            print("[DEBUG] Frame capturado, shape:", fram.shape)
 
-        gray = cv2.cvtColor(fram, cv2.COLOR_BGR2GRAY)
-        corners, ids, _ = self.detector.detectMarkers(gray)
-        frame = self.outlineDetection(fram, corners, ids)
+            gray = cv2.cvtColor(fram, cv2.COLOR_BGR2GRAY)
+            corners, ids, _ = self.detector.detectMarkers(gray)
+            frame = self.outlineDetection(fram, corners, ids)
 
-        if ids is not None:
-            print("[DEBUG] Marcadores detectados:", ids.flatten())
-            self.csv.reading_and_writing_sensors(ids, self.probe, curr)
-            timestamp = time.strftime("%Y%m%d-%H%M%S")
-            cv2.imwrite(f"./images/detected_{timestamp}.jpg", frame)
-        
+            if ids is not None:
+                print("[DEBUG] Marcadores detectados:", ids.flatten())
+                
+                timestamp = time.strftime("%Y%m%d-%H%M%S")
+                image_filename = f"detected_{timestamp}.jpg"
+                
+                self.csv.reading_and_writing_sensors(ids, self.probe, curr, image_name=image_filename)
+                
+                cv2.imwrite(f"./images/{image_filename}", frame)
+            
 
-        cv2.imshow("ArUco Detection", frame)
-        cv2.waitKey(1)
-        return frame
+            cv2.imshow("ArUco Detection", frame)
+            cv2.waitKey(1)
+            return frame
