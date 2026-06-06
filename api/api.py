@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 import pandas as pd
+import numpy as np
 import os
 
 app = FastAPI()
@@ -22,7 +23,10 @@ def get_csv_data(dataset_id: str):
     if not os.path.exists(csv_path):
         raise HTTPException(status_code=500, detail="CSV file missing on server.")
     
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, na_values=["None", "N/A", "none", "n/a"])
+        
+        # 2. Replace NaN values with native Python None so FastAPI can turn them into clean JSON 'null's
+    df = df.replace({np.nan: None})
     return df.to_dict(orient="records")
 
 @app.get("/images/{image_name}")
