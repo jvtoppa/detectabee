@@ -17,8 +17,8 @@ class SQLiteTables:
         target_dir = os.path.dirname(self.pathDB)
         if target_dir and not os.path.exists(target_dir):
             os.makedirs(target_dir, exist_ok=True)
-            
         self.conn = sqlite3.connect(self.pathDB)
+        self.cursor.execute("PRAGMA journal_mode=WAL;")
         self.cursor = self.conn.cursor()
         
         self.cursor.execute(f"""

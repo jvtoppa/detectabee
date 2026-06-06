@@ -14,27 +14,45 @@ DB_FILES = {
 }
 
 @app.get("/data/{dataset_id}")
-def get_db_data(dataset_id: str, limit: int = 100):
-    
+def get_paginated_data(
+    dataset_id: str, 
+    page: int = Query(default=1, ge=1),      # Must be greater than or equal to 1
+    size: int = Query(default=100, le=500)   # Must be less than or equal to 500 rows
+):
     if dataset_id not in DB_FILES:
         raise HTTPException(status_code=404, detail="Dataset not found.")
         
     db_path = DB_FILES[dataset_id]
     
+    offset = (page - 1) * size
+    
     try:
         conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row 
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
-        cursor.execute(f"SELECT * FROM {dataset_id} ORDER BY Timestamp DESC LIMIT ?", (limit,))
+        cursor.execute(f"SELECT COUNT(*) FROM {dataset_id}")
+        total_records = cursor.fetchone()[0]
+        
+        cursor.execute(
+            f"SELECT * FROM {dataset_id} ORDER BY Timestamp DESC LIMIT ? OFFSET ?",
+            (size, offset)
+        )
         rows = cursor.fetchall()
         conn.close()
         
-        return [dict(row) for row in rows]
+        return {
+            "metadata": {
+                "current_page": page,
+                "page_size": size,
+                "total_records": total_records,
+                "total_pages": (total_records + size - 1) // size  # Clean ceiling division
+            },
+            "records": [dict(row) for row in rows]
+        }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database reading error: {str(e)}")
-    
+        raise HTTPException(status_code=500, detail=f"Database pagination error: {str(e)}")    
 
 @app.get("/images/{image_name}")
 def get_image(image_name: str):
