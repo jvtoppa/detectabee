@@ -68,7 +68,9 @@ camera_main = camera.Camera(camera_feed_csv, probe)
 try:
     while True:
         current_time = time.time()
-        station_csv.reading_and_writing_sensors([[0]],probe, current_time)
+        if current_time - last_update_time >= update_interval:
+            station_csv.reading_and_writing_sensors([[0]],probe, current_time)
+            last_update_time = current_time
         camera_main.capture()
 
 finally:
