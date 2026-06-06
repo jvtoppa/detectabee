@@ -1,10 +1,11 @@
 import configs
 import time
+import os
 
 class CSVTables:
 
     def __init__(self, typ, header, interval):
-        self.pathCSV = configs.PATH_TO_FOLDER_TABLES + time.strftime('%Y-%m-%d-%H:%M:%S_') + typ + ".csv"
+        self.pathCSV = configs.path_to_folder + typ + ".csv"
         self.headerCSV = header
         self.last_read_time = 0
         self.read_interval = interval
@@ -12,6 +13,10 @@ class CSVTables:
 
 
     def initialize(self):
+        target_dir = os.path.dirname(self.pathCSV)
+        
+        if target_dir and not os.path.exists(target_dir):
+            os.makedirs(target_dir, exist_ok=True)
         self.csv = open(self.pathCSV, 'w')
         self.csv.write(self.headerCSV + "\n")
 
