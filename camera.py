@@ -4,7 +4,7 @@ import configs
 import time
 from picamera2 import Picamera2
 import tables
-
+from libcamera import controls
 
 class Camera:
 
@@ -29,7 +29,7 @@ class Camera:
 
         print("[DEBUG] Configurando camera para preview simples")
         cam.configure(cam.create_preview_configuration(main={"format": 'RGB888', "size": (self.width, self.height)}))
-
+        cam.set_controls({"AfMode": controls.AfModeEnum.Continuous})
         print("[DEBUG] Iniciando camera")
         cam.start()
 
