@@ -14,12 +14,13 @@ class Camera:
         self.width = configs.width
         self.csv = csv
         self.probe = probe
-        self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_250)
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
         self.params = self.__cameraParameters()
+        self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.params)
         self.camera = self.initializeCam()
 
     def __cameraParameters(self):
-        parameters = cv2.aruco.DetectorParameters_create()
+        parameters = cv2.aruco.DetectorParameters()
         parameters.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
         return parameters
 
@@ -32,7 +33,7 @@ class Camera:
         print("[DEBUG] Iniciando camera")
         cam.start()
 
-        time.sleep(2)  # dempo pro sensor ajustar
+        time.sleep(2)  # tempo pro sensor ajustar
 
         return cam
 
@@ -61,7 +62,7 @@ class Camera:
         print("[DEBUG] Frame capturado, shape:", fram.shape)
 
         gray = cv2.cvtColor(fram, cv2.COLOR_BGR2GRAY)
-        corners, ids, _ = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.params)
+        corners, ids, _ = self.detector.detectMarkers(gray)
         frame = self.outlineDetection(fram, corners, ids)
 
         if ids is not None:
@@ -69,6 +70,8 @@ class Camera:
             self.csv.reading_and_writing_sensors(ids, self.probe, curr)
             timestamp = time.strftime("%Y%m%d-%H%M%S")
             cv2.imwrite(f"detected_{timestamp}.jpg", frame)
+        
 
         cv2.imshow("ArUco Detection", frame)
+        cv2.waitKey(1)
         return frame
