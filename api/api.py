@@ -7,8 +7,8 @@ app = FastAPI()
 
 IMAGE_DIR = "./images"
 CSV_FILES = {
-    "dataset1": "./data/camera_feed.csv",
-    "dataset2": "./data/station_feed.csv"
+    "camera": "./data/camera_feed.csv",
+    "station": "./data/station_feed.csv"
 }
 
 @app.get("/data/{dataset_id}")
