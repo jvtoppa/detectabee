@@ -1,5 +1,6 @@
 import configs
 import time
+import os
 
 class CSVTables:
 
@@ -12,6 +13,10 @@ class CSVTables:
 
 
     def initialize(self):
+        target_dir = os.path.dirname(self.pathCSV)
+        
+        if target_dir and not os.path.exists(target_dir):
+            os.makedirs(target_dir, exist_ok=True)
         self.csv = open(self.pathCSV, 'w')
         self.csv.write(self.headerCSV + "\n")
 
