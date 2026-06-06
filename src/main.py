@@ -1,4 +1,4 @@
- #  Copyright (c) 2025 João Toppa <j213140@dac.unicamp.br>
+#  Copyright (c) 2025 João Toppa <j213140@dac.unicamp.br>
  #  
  #   Redistribution and use in source and binary forms, with or without
  #   modification, are permitted provided that the following conditions
@@ -28,15 +28,15 @@ import adafruit_bmp280
 import configs
 import sensors
 import smbus
-import tables
 import camera
+import tables 
 
-#IMPORTS FOR BEE DETECTION
+# IMPORTS FOR BEE DETECTION
 
 import cv2
 import numpy as np
 
-#SETUP - PROBES
+# SETUP - PROBES
 
 i2c = busio.I2C(SCL, SDA)
 bus = smbus.SMBus(1)
@@ -52,24 +52,19 @@ probe = sensors.SensorProbe(ccs811, mpu9250, bmp280)
 last_update_time = time.time()
 update_interval = 0.4
 
-#SETUP - CSV
 
-header = "Data,IDs,Temp-C,Temp-F,CO2,TVOC,Vibration\n"
+camera_feed_db = tables.SQLiteTables("camera_feed", 5)
+station_db = tables.SQLiteTables("station_feed", 1)
 
-camera_feed_csv = tables.CSVTables("camera_feed",header, 5)
-station_csv = tables.CSVTables("station_feed",header, 1)
+camera_main = camera.Camera(camera_feed_db, probe)
 
-#SETUP - CAMERA
-
-camera_main = camera.Camera(camera_feed_csv, probe)
-
-#MAIN LOOP
+# MAIN LOOP
 
 try:
     while True:
         current_time = time.time()
         if current_time - last_update_time >= update_interval:
-            station_csv.reading_and_writing_sensors([[0]],probe, current_time)
+            station_db.reading_and_writing_sensors([[0]], probe, current_time)
             last_update_time = current_time
         camera_main.capture()
 

@@ -1,24 +1,38 @@
 import configs
 import time
 import os
+import sqlite3
 
-class CSVTables:
+class SQLiteTables:
 
-    def __init__(self, typ, header, interval):
-        self.pathCSV = configs.path_to_folder + typ + ".csv"
-        self.headerCSV = header
+    def __init__(self, typ, interval):
+        self.pathDB = configs.path_to_folder + typ + ".db"
+        self.table_name = typ
         self.last_read_time = 0
         self.read_interval = interval
         self.initialize()
 
 
     def initialize(self):
-        target_dir = os.path.dirname(self.pathCSV)
-        
+        target_dir = os.path.dirname(self.pathDB)
         if target_dir and not os.path.exists(target_dir):
             os.makedirs(target_dir, exist_ok=True)
-        self.csv = open(self.pathCSV, 'w')
-        self.csv.write(self.headerCSV + "\n")
+            
+        self.conn = sqlite3.connect(self.pathDB)
+        self.cursor = self.conn.cursor()
+        
+        self.cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS {self.table_name} (
+                Timestamp TEXT,
+                ID INTEGER,
+                Temp_C REAL,
+                Temp_F REAL,
+                CO2 INTEGER,
+                TVOC INTEGER,
+                Vibration REAL
+            )
+        """)
+        self.conn.commit()
 
 
     def reading_and_writing_sensors(self, ids, probe, current_time):
@@ -29,17 +43,28 @@ class CSVTables:
                 temperature_f = temperature_c * (9 / 5) + 32
                 temperature_c = round(temperature_c, 2)
                 temperature_f = round(temperature_f, 2)
+            else:
+                temperature_f = None 
 
             co2 = probe.readECO2()
             tvoc = probe.readVolatile()
             vibration = probe.readAcceleration()
+            
+            co2 = None if co2 in ["None", "N/A", "none", "n/a"] else co2
+            tvoc = None if tvoc in ["None", "N/A", "none", "n/a"] else tvoc
 
-            self.csv.write(f"{time.strftime('%Y-%m-%d-%H:%M:%S')},{ids[0][0]},{temperature_c},{temperature_f},{co2},{tvoc},{vibration}\n")
-            self.csv.flush()
+            timestamp = time.strftime('%Y-%m-%d-%H:%M:%S')
+
+            self.cursor.execute(
+                f"INSERT INTO {self.table_name} VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (timestamp, ids[0][0], temperature_c, temperature_f, co2, tvoc, vibration)
+            )
+            
+            self.conn.commit()
 
             self.last_read_time = current_time
 
 
     def __del__(self):
-        if hasattr(self, 'csv') and not self.csv.closed:
-            self.csv.close()
+        if hasattr(self, 'conn'):
+            self.conn.close()
