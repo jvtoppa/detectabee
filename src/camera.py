@@ -67,14 +67,13 @@ class Camera:
 
             if ids is not None:
                 print("[DEBUG] Marcadores detectados:", ids.flatten())
-                
+            
                 timestamp = time.strftime("%Y%m%d-%H%M%S")
                 image_filename = f"detected_{timestamp}.jpg"
                 
                 self.csv.reading_and_writing_sensors(ids, self.probe, curr, image_name=image_filename)
                 
                 cv2.imwrite(f"./images/{image_filename}", frame)
-            
 
             cv2.imshow("ArUco Detection", frame)
             cv2.waitKey(1)
