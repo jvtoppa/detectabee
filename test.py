@@ -21,18 +21,23 @@ print("Starting read loop. Press Ctrl+C to exit.\n")
 # 3. Dedicated Read Loop
 while True:
     try:
-        # The library automatically handles waking the chip up from deep sleep
+        # Step 1: Manually force a wake-up signal down the bus
+        try:
+            i2c1.writeto(0x5C, b'')  # Send an empty byte to address 0x5C
+        except OSError:
+            # We EXPECT an error here because the sensor won't ACK while waking up
+            pass
+        
+        # Step 2: Give its internal microcontroller a moment to boot up
+        time.sleep(0.01)  # 10ms delay
+        
+        # Step 3: Now read the data normally
         temp = am2320.temperature
         humidity = am2320.relative_humidity
         
         print(f"[{time.strftime('%H:%M:%S')}] Temp: {temp:.1f}°C | Humidity: {humidity:.1f}%")
         
-    except OSError as e:
-        # This catches common I2C bus timing/CRC issues if polled too quickly
-        print(f"[{time.strftime('%H:%M:%S')}] Bus Read Warning: {e}")
     except Exception as e:
-        print(f"Unexpected Error: {e}")
+        print(f"[{time.strftime('%H:%M:%S')}] Read failure: {e}")
         
-    # Crucial: Keep this delay at 3+ seconds. 
-    # Polling the AM2320 faster than its sleep cycle causes it to lock up.
-    time.sleep(3)
+    time.sleep(3)  # Keep the loop slow
