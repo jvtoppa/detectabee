@@ -5,10 +5,10 @@ import busio
 import smbus2
 import adafruit_ccs811
 import adafruit_am2320
-import adafruit_bmp280
+import adafruit_bmp280 # Works perfectly for BME280 temperature tracking
 
 print("==================================================")
-print("       ALL-IN-ONE DUAL I2C BUS TEST BENCH         ")
+print("       CORRECTED DUAL I2C BUS TEST BENCH         ")
 print("==================================================")
 
 # ----------------------------------------------------------------
@@ -20,9 +20,8 @@ print("Initializing I2C buses...")
 i2c1 = busio.I2C(board.SCL, board.SDA)
 
 # Bus 0: Secondary hardware pins (SDA0/SCL0)
-# Ensure 'dtparam=i2c_vc=on' is in your /boot/firmware/config.txt
 i2c0 = busio.I2C(board.D1, board.D0) 
-bus0_raw = smbus2.SMBus(0) # Open raw smbus handle for MPU9250 on bus 0
+bus0_raw = smbus2.SMBus(0) # Raw handle for the MPU9250 on Bus 0
 
 # ----------------------------------------------------------------
 # 2. MPU9250 CONFIGURATION & CONSTANTS (I2C-0)
@@ -47,7 +46,6 @@ def init_mpu9250():
         return False
 
 def read_raw_mpu(addr):
-    high = bus0_raw.write_byte_data(MPU_ADDR, addr, 0x00) # Ensure active wake
     high = bus0_raw.read_byte_data(MPU_ADDR, addr)
     low  = bus0_raw.read_byte_data(MPU_ADDR, addr + 1)
     value = (high << 8) | low
@@ -67,44 +65,46 @@ def get_vibration():
     return (axes_ms2[0]**2 + axes_ms2[1]**2 + axes_ms2[2]**2) ** 0.5
 
 # ----------------------------------------------------------------
-# 3. INITIALIZE ALL INSTANCES
+# 3. INITIALIZE SENSORS BASED ON YOUR LAYOUT
 # ----------------------------------------------------------------
-print("Connecting to sensor layout...")
+print("\nConnecting to your layout...")
 
-# --- BUS 0 SENSORS ---
-mpu_active = init_mpu9250()
+# --- SENSORS ON BUS 1 (i2c1) ---
+try:
+    ccs_bus1 = adafruit_ccs811.CCS811(i2c1)
+    print(" [+] CCS811 detected on i2c1 (0x5A)")
+except Exception as e:
+    print(f" [-] CCS811 on i2c1 Failed: {e}")
+    ccs_bus1 = None
 
 try:
-    am2320 = adafruit_am2320.AM2320(i2c0)
-    print(" [+] AM2320 detected on i2c0")
+    am2320 = adafruit_am2320.AM2320(i2c1)
+    print(" [+] AM2320 detected on i2c1 (0x5C)")
 except Exception as e:
-    print(f" [-] AM2320 Initialization Failed: {e}")
+    print(f" [-] AM2320 on i2c1 Failed: {e}")
     am2320 = None
 
-# --- BUS 1 SENSORS ---
+
+# --- SENSORS ON BUS 0 (i2c0) ---
 try:
-    ccs_bus1_A = adafruit_ccs811.CCS811(i2c1) # Defaults to 0x5A
-    print(" [+] CCS811 (A) detected on i2c1 (0x5A)")
+    ccs_bus0 = adafruit_ccs811.CCS811(i2c0)
+    print(" [+] CCS811 detected on i2c0 (0x5A)")
 except Exception as e:
-    print(f" [-] CCS811 (A) Failed: {e}")
-    ccs_bus1_A = None
+    print(f" [-] CCS811 on i2c0 Failed: {e}")
+    ccs_bus0 = None
 
 try:
-    # If your second board is modified to 0x5B, use this layout:
-    ccs_bus1_B = adafruit_ccs811.CCS811(i2c1, address=0x5B)
-    print(" [+] CCS811 (B) detected on i2c1 (0x5B)")
+    bme280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c0, 0x76)
+    print(" [+] BME280 detected on i2c0 (0x76)")
 except Exception as e:
-    print(f" [-] CCS811 (B) Failed (Check address jumpers): {e}")
-    ccs_bus1_B = None
+    print(f" [-] BME280 on i2c0 Failed: {e}")
+    bme280 = None
 
-try:
-    bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c1, 0x76)
-    print(" [+] BMP280 detected on i2c1 (0x76)")
-except Exception as e:
-    print(f" [-] BMP280 Failed: {e}")
-    bmp280 = None
+mpu_active = init_mpu9250()
+if mpu_active:
+    print(" [+] MPU9250 detected on i2c0 (0x68)")
 
-print("\nSetup complete. Commencing streaming data frame...\n")
+print("\nSetup configuration loaded. Starting live loop...\n")
 
 # ----------------------------------------------------------------
 # 4. MONITORING LOOP
@@ -116,7 +116,22 @@ try:
         
         # ====== I2C-0 READINGS ======
         print("\n [I2C-0 BUS DATA]")
-        
+        if ccs_bus0:
+            try:
+                print(f"   CCS811       -> eCO2: {ccs_bus0.eco2} ppm | TVOC: {ccs_bus0.tvoc} ppb")
+            except Exception as e:
+                print(f"   CCS811 Error -> {e}")
+        else:
+            print("   CCS811       -> OFFLINE")
+
+        if bme280:
+            try:
+                print(f"   BME280 Temp  -> {bme280.temperature:.2f} °C")
+            except Exception as e:
+                print(f"   BME280 Error -> {e}")
+        else:
+            print("   BME280       -> OFFLINE")
+
         if mpu_active:
             try:
                 print(f"   MPU9250 Vib  -> {get_vibration():.4f} m/s²")
@@ -124,53 +139,3 @@ try:
                 print(f"   MPU9250 Error -> {e}")
         else:
             print("   MPU9250      -> OFFLINE")
-
-        if am2320:
-            try:
-                # Manual empty write to pop AM2320 out of state sleep
-                try: i2c0.writeto(0x5C, b'')
-                except: pass
-                time.sleep(0.01)
-                
-                print(f"   AM2320 Temp  -> {am2320.temperature:.2f} °C")
-                print(f"   AM2320 Hum   -> {am2320.relative_humidity:.2f} %")
-            except Exception as e:
-                print(f"   AM2320 Error -> {e}")
-        else:
-            print("   AM2320       -> OFFLINE")
-
-        # ====== I2C-1 READINGS ======
-        print("\n [I2C-1 BUS DATA]")
-        
-        if ccs_bus1_A:
-            try:
-                print(f"   CCS811 (0x5A)-> eCO2: {ccs_bus1_A.eco2} ppm | TVOC: {ccs_bus1_A.tvoc} ppb")
-            except Exception as e:
-                print(f"   CCS811 (0x5A)-> Error: {e}")
-        else:
-            print("   CCS811 (0x5A)-> OFFLINE")
-
-        if ccs_bus1_B:
-            try:
-                print(f"   CCS811 (0x5B)-> eCO2: {ccs_bus1_B.eco2} ppm | TVOC: {ccs_bus1_B.tvoc} ppb")
-            except Exception as e:
-                print(f"   CCS811 (0x5B)-> Error: {e}")
-        else:
-            print("   CCS811 (0x5B)-> OFFLINE / NOT CONFIG")
-
-        if bmp280:
-            try:
-                print(f"   BMP280 Temp  -> {bmp280.temperature:.2f} °C")
-            except Exception as e:
-                print(f"   BMP280 Error -> {e}")
-        else:
-            print("   BMP280       -> OFFLINE")
-
-        # 3 seconds prevents data bus buffer overflows from the slow AM2320 response times
-        time.sleep(3)
-
-except KeyboardInterrupt:
-    print("\nBenchmark sequence aborted by operator.")
-finally:
-    bus0_raw.close()
-    print("Hardware handles detached.")
