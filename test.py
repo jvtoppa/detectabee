@@ -139,3 +139,36 @@ try:
                 print(f"   MPU9250 Error -> {e}")
         else:
             print("   MPU9250      -> OFFLINE")
+
+
+        # ====== I2C-1 READINGS ======
+        print("\n [I2C-1 BUS DATA]")
+        if ccs_bus1:
+            try:
+                print(f"   CCS811       -> eCO2: {ccs_bus1.eco2} ppm | TVOC: {ccs_bus1.tvoc} ppb")
+            except Exception as e:
+                print(f"   CCS811 Error -> {e}")
+        else:
+            print("   CCS811       -> OFFLINE")
+
+        if am2320:
+            try:
+                # Wake up byte trick specifically for AM2320 on i2c1
+                try: i2c1.writeto(0x5C, b'')
+                except: pass
+                time.sleep(0.01)
+                
+                print(f"   AM2320 Temp  -> {am2320.temperature:.2f} °C")
+                print(f"   AM2320 Hum   -> {am2320.relative_humidity:.2f} %")
+            except Exception as e:
+                print(f"   AM2320 Error -> {e}")
+        else:
+            print("   AM2320       -> OFFLINE")
+
+        time.sleep(3)
+
+except KeyboardInterrupt:
+    print("\nBenchmark sequence aborted by operator.")
+finally:
+    bus0_raw.close()
+    print("Hardware handles closed safely.")
