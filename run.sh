@@ -25,6 +25,15 @@ else
     echo " -> [Warning] src/main.py not found."
 fi
 
+if command -v tailscale &> /dev/null; then
+    echo " -> Starting Tailscale Funnel on port 8000..."
+    sudo tailscale funnel 8000 &
+    PIDS+=($!)
+    echo " -> Started Tailscale Funnel (PID: $!)"
+else
+    echo " -> [Warning] tailscale command not found. Skipping funnel."
+fi
+
 if [ -f "api/api.py" ]; then
     python3 api/api.py &
     PIDS+=($!)
@@ -38,14 +47,7 @@ uvicorn api.api:app --host 0.0.0.0 --port 8000 --reload &
 PIDS+=($!)
 echo " -> Started Uvicorn (PID: $!)"
 
-if command -v tailscale &> /dev/null; then
-    echo " -> Starting Tailscale Funnel on port 8000..."
-    sudo tailscale funnel 8000 &
-    PIDS+=($!)
-    echo " -> Started Tailscale Funnel (PID: $!)"
-else
-    echo " -> [Warning] tailscale command not found. Skipping funnel."
-fi
+
 
 
 echo -e "[System] All services running. Press Ctrl+C to stop everything.\n"
