@@ -40,7 +40,7 @@ echo " -> Started Uvicorn (PID: $!)"
 
 if command -v tailscale &> /dev/null; then
     echo " -> Starting Tailscale Funnel on port 8000..."
-    tailscale funnel 8000 &
+    sudo tailscale funnel 8000 &
     PIDS+=($!)
     echo " -> Started Tailscale Funnel (PID: $!)"
 else
