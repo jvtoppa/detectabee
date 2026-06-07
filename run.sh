@@ -38,6 +38,16 @@ uvicorn api.api:app --host 0.0.0.0 --port 8000 --reload &
 PIDS+=($!)
 echo " -> Started Uvicorn (PID: $!)"
 
+if command -v tailscale &> /dev/null; then
+    echo " -> Starting Tailscale Funnel on port 8000..."
+    tailscale funnel 8000 &
+    PIDS+=($!)
+    echo " -> Started Tailscale Funnel (PID: $!)"
+else
+    echo " -> [Warning] tailscale command not found. Skipping funnel."
+fi
+
+
 echo -e "[System] All services running. Press Ctrl+C to stop everything.\n"
 
 wait
