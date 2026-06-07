@@ -22,7 +22,6 @@ from RPi import GPIO
 from board import SCL, SDA
 import busio
 import time
-import adafruit_ssd1306
 import adafruit_ccs811
 import adafruit_bmp280
 import configs
