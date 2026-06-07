@@ -6,8 +6,7 @@ Este projeto integra sensores ambientais, câmera com detecção de marcadores A
 
 - Leitura de sensores ambientais (temperatura, pressão, aceleração, e qualidade do ar)
 - Detecção de abelhas via marcadores ArUco usando a câmera PiCamera2
-- Interface OLED com troca de páginas via botão físico
-- Registro dos dados em arquivos CSV com timestamp
+- Registro dos dados em banco de dados SQL
 - Atualização em tempo real das leituras na tela e via câmera
 
 ## Estrutura do Projeto
@@ -44,7 +43,7 @@ Este projeto integra sensores ambientais, câmera com detecção de marcadores A
 
 ```bash
 git clone https://github.com/seu-usuario/nome-do-projeto.git
-cd nome-do-projeto
+cd detectabee
 ```
 
 2. Instale as dependências:
@@ -56,7 +55,8 @@ pip install -r requirements.txt
 3. Execute o projeto:
 
 ```bash
-python3 main.py
+chmod +x ./run.sh
+./run.sh
 ```
 
 ## Observações
