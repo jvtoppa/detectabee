@@ -50,6 +50,17 @@ class SQLiteTables:
 
     def reading_and_writing_sensors(self, ids, probe, current_time, image_name=None):
         if current_time - self.last_read_time >= self.read_interval:
+            
+            try:
+                if hasattr(ids, 'flatten'):  # Handles OpenCV's numpy matrix format
+                    resolved_id = int(ids.flatten()[0])
+                elif isinstance(ids, list):  # Handles your main loop's manual [[0]] list format
+                    resolved_id = int(ids[0][0])
+                else:
+                    resolved_id = int(ids)
+            except Exception:
+                resolved_id = 0  # Fallback default ID if array structure goes weird
+
             temperature_c = probe.readTemperature()
 
             if not isinstance(temperature_c, str):
@@ -68,15 +79,16 @@ class SQLiteTables:
 
             timestamp = time.strftime('%Y-%m-%d-%H:%M:%S')
 
+            # Use resolved_id (a native Python int) instead of ids[0][0]
             if self.table_name == "camera_feed":
                 self.cursor.execute(
                     f"INSERT INTO {self.table_name} VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                    (timestamp, ids[0][0], image_name, temperature_c, temperature_f, co2, tvoc, vibration)
+                    (timestamp, resolved_id, image_name, temperature_c, temperature_f, co2, tvoc, vibration)
                 )
             else:
                 self.cursor.execute(
                     f"INSERT INTO {self.table_name} VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (timestamp, ids[0][0], temperature_c, temperature_f, co2, tvoc, vibration)
+                    (timestamp, resolved_id, temperature_c, temperature_f, co2, tvoc, vibration)
                 )
             
             self.conn.commit()
