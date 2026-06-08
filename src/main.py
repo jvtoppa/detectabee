@@ -52,7 +52,7 @@ bmp280_bus0 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c0, 0x76)
 mpu9250_bus0 = sensors.Accelerometer(configs.DEVICE_ADDRESS, configs.ACCEL_XOUT_H, configs.ACCEL_CONFIG, bus, configs.PWR_MGMT_1)
 sensors.Accelerometer.initialize(mpu9250_bus0)
 probe_bus0 = sensors.SensorProbe(ccs811=ccs811_bus0, mpu9250=mpu9250_bus0, climate_sensor=bmp280_bus0)
-probe_bus1 = sensors.SensorProbe(ccs811=ccs811_bus1, climate_sensor=am2320_bus1)
+probe_bus1 = sensors.SensorProbe(ccs811=ccs811_bus1, mpu9250=None, climate_sensor=am2320_bus1)
 last_update_time = time.time()
 update_interval = 0.4
 
