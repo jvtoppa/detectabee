@@ -8,12 +8,14 @@ from libcamera import controls
 
 class Camera:
 
-    def __init__(self, csv, probe):
+    def __init__(self, csv, probe_int, probe_ext, probe):
         self.fps = configs.fps
         self.height = configs.height
         self.width = configs.width
         self.csv = csv
         self.probe = probe
+        self.probe_int = probe_int 
+        self.probe_ext = probe_ext
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
         self.params = self.__cameraParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.params)
@@ -59,7 +61,7 @@ class Camera:
     def capture(self):
             fram = self.camera.capture_array()
             curr = time.time()
-            print("[DEBUG] Frame capturado, shape:", fram.shape)
+          #  print("[DEBUG] Frame capturado, shape:", fram.shape)
 
             gray = cv2.cvtColor(fram, cv2.COLOR_BGR2GRAY)
             corners, ids, _ = self.detector.detectMarkers(gray)
@@ -71,8 +73,7 @@ class Camera:
                 timestamp = time.strftime("%Y%m%d-%H%M%S")
                 image_filename = f"detected_{timestamp}.jpg"
                 
-                self.csv.reading_and_writing_sensors(ids, self.probe, curr, image_name=image_filename)
-                
+                self.csv.reading_and_writing_sensors(ids, self.probe_int, self.probe_ext, curr, image_name=image_filename)
                 cv2.imwrite(f"./images/{image_filename}", frame)
 
             cv2.imshow("ArUco Detection", frame)

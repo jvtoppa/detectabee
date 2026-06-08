@@ -24,9 +24,11 @@ import busio
 import time
 import adafruit_ccs811
 import adafruit_bmp280
+import adafruit_am2320
 import configs
 import sensors
 import smbus
+import board
 import camera
 import tables 
 
@@ -37,17 +39,20 @@ import numpy as np
 
 # SETUP - PROBES
 
-i2c = busio.I2C(SCL, SDA)
-bus = smbus.SMBus(1)
-
+i2c1 = busio.I2C(SCL, SDA)
+i2c0 = busio.I2C(board.D1, board.D0) 
+bus = smbus.SMBus(0)
 GPIO.setmode(GPIO.BCM)
 
-ccs811 = adafruit_ccs811.CCS811(i2c)
-bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, 0x76)
-mpu9250 = sensors.Accelerometer(configs.DEVICE_ADDRESS, configs.ACCEL_XOUT_H, configs.ACCEL_CONFIG, bus, configs.PWR_MGMT_1)
-sensors.Accelerometer.initialize(mpu9250)
-probe = sensors.SensorProbe(ccs811, mpu9250, bmp280)
+ccs811_bus1 = adafruit_ccs811.CCS811(i2c1)
+am2320_bus1 = adafruit_am2320.AM2320(i2c1)
 
+ccs811_bus0 = adafruit_ccs811.CCS811(i2c0)
+bmp280_bus0 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c0, 0x76)
+mpu9250_bus0 = sensors.Accelerometer(configs.DEVICE_ADDRESS, configs.ACCEL_XOUT_H, configs.ACCEL_CONFIG, bus, configs.PWR_MGMT_1)
+sensors.Accelerometer.initialize(mpu9250_bus0)
+probe_bus0 = sensors.SensorProbe(ccs811=ccs811_bus0, mpu9250=mpu9250_bus0, climate_sensor=bmp280_bus0)
+probe_bus1 = sensors.SensorProbe(ccs811=ccs811_bus1, climate_sensor=am2320_bus1)
 last_update_time = time.time()
 update_interval = 0.4
 
@@ -55,7 +60,7 @@ update_interval = 0.4
 camera_feed_db = tables.SQLiteTables("camera_feed", 5)
 station_db = tables.SQLiteTables("station_feed", 1)
 
-camera_main = camera.Camera(camera_feed_db, probe)
+camera_main = camera.Camera(camera_feed_db, probe_bus0, probe_bus1)
 
 # MAIN LOOP
 
@@ -63,8 +68,8 @@ try:
     while True:
         current_time = time.time()
         if current_time - last_update_time >= update_interval:
-            station_db.reading_and_writing_sensors([[0]], probe, current_time)
-            last_update_time = current_time
+            station_db.reading_and_writing_sensors([[0]], current_time, probe_int=probe_bus0, probe_ext=probe_bus1)
+        last_update_time = current_time
         camera_main.capture()
 
 finally:

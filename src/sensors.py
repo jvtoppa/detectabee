@@ -46,10 +46,10 @@ class Accelerometer:
 
 
 class SensorProbe:
-    def __init__(self, ccs811, mpu9250, bme280):
+    def __init__(self, ccs811, mpu9250, climate_sensor):
         self.vo2 = ccs811
         self.accel = mpu9250
-        self.humTemp = bme280
+        self.temp = climate_sensor   
 
     def readECO2(self):
         if self.vo2:
@@ -70,26 +70,16 @@ class SensorProbe:
                 return "N/A"
         else:
             return "N/A"
-        
-    def readHumidity(self):
-        if self.humTemp:
-            try:
-                return self.humTemp.humidity
-            except Exception as e:
-                print("Could not read humidity values - ", e)
-                return "N/A"
-        else:
-            return "N/A"
-        
+
     def readTemperature(self):
-        if self.humTemp:
+        if self.temp:
             try:
-                return self.humTemp.temperature
+                return self.temp.temperature
             except Exception as e:
                 print("Could not read temperature - ", e)
                 return "N/A"
-        else:
-            return "N/A"
+            
+        return "N/A"
         
     
     def readAcceleration(self):
