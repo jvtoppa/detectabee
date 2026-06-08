@@ -54,7 +54,7 @@ sensors.Accelerometer.initialize(mpu9250_bus0)
 probe_bus0 = sensors.SensorProbe(ccs811=ccs811_bus0, mpu9250=mpu9250_bus0, climate_sensor=bmp280_bus0)
 probe_bus1 = sensors.SensorProbe(ccs811=ccs811_bus1, mpu9250=None, climate_sensor=am2320_bus1)
 last_update_time = time.time()
-update_interval = 0.4
+update_interval = 60
 
 
 camera_feed_db = tables.SQLiteTables("camera_feed", 5)
@@ -68,8 +68,9 @@ try:
     while True:
         current_time = time.time()
         if current_time - last_update_time >= update_interval:
-            station_db.reading_and_writing_sensors([[0]], current_time, probe_int=probe_bus0, probe_ext=probe_bus1)
-        last_update_time = current_time
+            station_db.reading_and_writing_sensors([[0]], probe_bus0, probe_bus1, current_time)
+            last_update_time = current_time
+
         camera_main.capture()
 
 finally:
