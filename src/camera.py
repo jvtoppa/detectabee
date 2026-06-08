@@ -8,12 +8,11 @@ from libcamera import controls
 
 class Camera:
 
-    def __init__(self, csv, probe_int, probe_ext, probe):
+    def __init__(self, csv, probe_int, probe_ext):
         self.fps = configs.fps
         self.height = configs.height
         self.width = configs.width
         self.csv = csv
-        self.probe = probe
         self.probe_int = probe_int 
         self.probe_ext = probe_ext
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
