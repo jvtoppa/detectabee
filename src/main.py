@@ -52,7 +52,12 @@ except Exception as e:
  
 am2320_bus1 = adafruit_am2320.AM2320(i2c1)
 
-ccs811_bus0 = adafruit_ccs811.CCS811(i2c0)
+try:
+    ccs811_bus0 = adafruit_ccs811.CCS811(i2c0)
+except Exception as e:
+    ccs811_bus1 = None
+    print(f"Warning: Failed to initialize CCS811: {e}")
+
 bmp280_bus0 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c0, 0x76)
 mpu9250_bus0 = sensors.Accelerometer(configs.DEVICE_ADDRESS, configs.ACCEL_XOUT_H, configs.ACCEL_CONFIG, bus, configs.PWR_MGMT_1)
 sensors.Accelerometer.initialize(mpu9250_bus0)
