@@ -43,8 +43,13 @@ i2c1 = busio.I2C(SCL, SDA)
 i2c0 = busio.I2C(board.D1, board.D0) 
 bus = smbus.SMBus(0)
 GPIO.setmode(GPIO.BCM)
-
-ccs811_bus1 = adafruit_ccs811.CCS811(i2c1)
+try:
+    ccs811_bus1 = adafruit_ccs811.CCS811(i2c1)
+ 
+except Exception as e:
+    ccs811_bus1 = None
+    print(f"Warning: Failed to initialize CCS811: {e}")
+ 
 am2320_bus1 = adafruit_am2320.AM2320(i2c1)
 
 ccs811_bus0 = adafruit_ccs811.CCS811(i2c0)
