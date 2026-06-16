@@ -1,4 +1,4 @@
-# 🐝 DetectaBee
+# DetectaBee
 
 **A computer vision-based bee monitoring system using ArUco markers and Raspberry Pi**
 
@@ -10,16 +10,8 @@
 
 DetectaBee is an automated hive monitoring system that combines computer vision, environmental sensors, and embedded visualization to track bee activity and environmental conditions in real-time. Developed as part of a research project at NEEPC-UFSCar, this system uses ArUco marker detection to identify and monitor individual bees within a hive.
 
-**Key Features:**
-- 🎯 **ArUco Marker Detection** - Automated bee identification via computer vision
-- 📊 **Environmental Monitoring** - Real-time temperature, pressure, acceleration, and air quality measurements
-- 🔴 **Live Display** - OLED interface for instant data visualization
-- 💾 **Data Logging** - Persistent storage of all measurements in CSV format
-- ⚡ **Lightweight** - Optimized for Raspberry Pi 4 and above
-
 ## Hardware Requirements
 
-### Essential Components
 - **Raspberry Pi 4 (2GB RAM minimum, 4GB+ recommended)**
 - **PiCamera2 or compatible camera module**
 - **OLED Display (SSD1306, 128x64 resolution)**
@@ -47,7 +39,6 @@ OLED Display:
 
 ## Software Requirements
 
-### System Dependencies
 ```bash
 # Core packages
 - Python 3.9+
@@ -111,46 +102,6 @@ Or directly:
 python3 main.py
 ```
 
-## Project Structure
-
-```
-detectabee/
-├── main.py              # Main event loop and system integration
-├── camera.py            # Camera capture and ArUco marker detection
-├── sensors.py           # I2C sensor readings (CCS811, BMP280, MPU9250)
-├── screen.py            # OLED display interface and rendering
-├── tables.py            # Data management and CSV logging
-├── configs.py           # Global configuration parameters
-├── run.sh               # Startup script
-├── requirements.txt     # Python dependencies
-└── README.md            # This file
-```
-
-## Configuration
-
-### sensors.py
-Configure sensor I2C addresses and calibration:
-```python
-CCS811_ADDR = 0x5A      # Air quality sensor
-BMP280_ADDR = 0x76      # Temperature/pressure sensor
-MPU9250_ADDR = 0x68     # Accelerometer
-```
-
-### camera.py
-Adjust ArUco detection parameters:
-```python
-MARKER_SIZE = 0.05      # Expected marker size in meters
-CAMERA_RESOLUTION = (1280, 720)
-FPS = 30
-```
-
-### configs.py
-Global settings:
-- Data logging intervals
-- Display refresh rate
-- Sensor polling frequency
-- CSV file output path
-
 ## Usage
 
 ### Starting the Monitor
@@ -162,7 +113,7 @@ The system will:
 1. Initialize all sensors
 2. Start the camera feed
 3. Display readings on the OLED screen
-4. Log all measurements to CSV files
+4. Log all measurements to database files
 
 ### Real-Time Data Visualization
 - Environmental readings (temperature, pressure, CO₂) appear on the OLED display
@@ -172,22 +123,6 @@ The system will:
 ### Stopping the Application
 Press `Ctrl+C` to gracefully shutdown the system.
 
-## Output Data
-
-All measurements are logged to CSV files in the `data/` directory:
-
-```
-data/
-├── hive_monitoring_YYYY-MM-DD.csv
-├── sensor_readings_YYYY-MM-DD.csv
-└── camera_detections_YYYY-MM-DD.csv
-```
-
-### CSV Format Example
-```
-timestamp,temperature,pressure,co2_equivalent,acceleration_x,acceleration_y,acceleration_z,bee_count,marker_ids
-2026-06-16T10:30:45,25.3,1013.25,445,0.02,-0.01,1.00,5,"[12,15,23]"
-```
 
 ## Troubleshooting
 
@@ -209,46 +144,12 @@ i2cdetect -y 1
 
 # If devices missing:
 # 1. Check power (3.3V) to sensors
-# 2. Verify SDA/SCL connections (GPIO 2 & 3)
-# 3. Ensure pull-up resistors are installed (typically 10kΩ)
-# 4. Check for duplicate addresses with: sudo dmesg
+# 2. Take off probes and put them back. CCS811 has a particular nasty problem with connecting to Raspberry pis (WIP).
 ```
-
-### OLED Display Blank
-- Verify I2C address matches configuration (typically 0x3C or 0x3D)
-- Check power supply (3.3V/5V depending on model)
-- Test with: `sudo i2cdetect -y 1`
-
-### Performance Issues
-- Reduce camera resolution in `camera.py`
-- Decrease sensor polling frequency in `configs.py`
-- Close unnecessary background processes
-- Use 4GB+ RAM Raspberry Pi
 
 ## Research & References
 
-This project is part of ongoing research at **NEEPC-UFSCar** (Núcleo de Engenharia Eletrônica e Processamento de Computadores - Universidade Federal de São Carlos).
-
-**Technologies Used:**
-- OpenCV with ArUco marker detection
-- Raspberry Pi embedded Linux
-- I2C sensor integration
-- Real-time data acquisition
-
-## Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/improvement`)
-3. Commit your changes (`git commit -m 'Add improvement'`)
-4. Push to the branch (`git push origin feature/improvement`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
+This project is part of ongoing research at **NEEPC-UFSCar**. This project is licensed under the MIT License - see the LICENSE file for details. The author of this codepiece would like to acknowledge:
 
 - **NEEPC-UFSCar** - Research center providing project support
 - **OpenCV Community** - ArUco marker detection library
@@ -272,8 +173,8 @@ If you use DetectaBee in your research, please cite:
 ## Contact & Support
 
 For issues, questions, or collaboration:
-- 📧 Open a GitHub Issue
-- 🔗 Visit [NEEPC-UFSCar](https://neepc.ufscar.br/)
+- Open a GitHub Issue
+- Visit [NEEPC-UFSCar](https://neepc.ufscar.br/)
 
 ---
 
