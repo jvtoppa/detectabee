@@ -1,6 +1,6 @@
 # DetectaBee
 
-**A computer vision-based bee monitoring system using ArUco markers and Raspberry Pi**
+**A computer vision-based bee monitoring system using ArUco markers and Raspberry Pi** (also, check out the [Dashboard](https://detectabee.streamlit.app/)!)
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
