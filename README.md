@@ -6,9 +6,11 @@
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Research Project](https://img.shields.io/badge/Research-NEEPC--UFSCar-orange)](https://neepc.ufscar.br/)
 
+![A detected tagged bee](bees.png)
 ## Overview
 
-DetectaBee is an automated hive monitoring system that combines computer vision, environmental sensors, and embedded visualization to track bee activity and environmental conditions in real-time. Developed as part of a research project at NEEPC-UFSCar, this system uses ArUco marker detection to identify and monitor individual bees within a hive.
+Detect-a-bee (or, in portuguese, Detecta-Bee) is an automated hive monitoring system that combines computer vision, environmental sensors, and embedded visualization to track bee activity and environmental conditions in real-time. Developed as part of a research project at NEEPC-UFSCar, this system uses ArUco marker detection to identify and monitor individual bees within a hive.
+
 
 ## Hardware Requirements
 
@@ -148,6 +150,8 @@ i2cdetect -y 1
 ```
 
 ## Research & References
+
+![Detect-a-bee](beebox.png)
 
 This project is part of ongoing research at **NEEPC-UFSCar**. This project is licensed under the MIT License - see the LICENSE file for details. The author of this codepiece would like to acknowledge:
 
