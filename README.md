@@ -153,7 +153,7 @@ i2cdetect -y 1
 
 ![Detect-a-bee](beebox.png)
 
-This project is part of ongoing research at **NEEPC-UFSCar**. This project is licensed under the MIT License - see the LICENSE file for details. The author of this codepiece would like to acknowledge:
+This project is part of ongoing research at **NEEPC-UFSCar**. This project is licensed under the MIT License. The author of this codepiece would like to acknowledge:
 
 - **NEEPC-UFSCar** - Research center providing project support
 - **OpenCV Community** - ArUco marker detection library
